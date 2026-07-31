@@ -31,7 +31,8 @@ function init() {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       first_response_at TEXT,                  -- quando l'admin lo prende in carico
       closed_at TEXT,                          -- quando viene chiuso
-      resolution_minutes INTEGER,              -- tempo di risoluzione calcolato
+      resolution_minutes INTEGER,              -- tempo totale (creazione -> chiusura)
+      work_minutes INTEGER,                    -- tempo di lavorazione (in lavorazione -> chiusura)
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
@@ -61,6 +62,13 @@ function init() {
     );
   `);
 
+  // Migrazione: aggiunge la colonna work_minutes ai database già esistenti (senza toccare i dati).
+  const cols = db.prepare("PRAGMA table_info(tickets)").all();
+  if (!cols.some(c => c.name === 'work_minutes')) {
+    db.exec('ALTER TABLE tickets ADD COLUMN work_minutes INTEGER');
+    console.log('>>> Migrazione: aggiunta colonna work_minutes alla tabella tickets.');
+  }
+
   // Crea l'utente admin di default se non esiste nessun admin
   const adminExists = db.prepare("SELECT COUNT(*) AS c FROM users WHERE role = 'admin'").get();
   if (adminExists.c === 0) {
@@ -76,3 +84,4 @@ function init() {
 }
 
 module.exports = { db, init };
+
