@@ -137,9 +137,28 @@ async function renderList() {
         <div class="stat"><div class="label">Aperti</div><div class="value">${s.byStatus['Aperto']}</div></div>
         <div class="stat"><div class="label">In lavorazione</div><div class="value">${s.byStatus['In lavorazione']}</div></div>
         <div class="stat"><div class="label">Chiusi</div><div class="value">${s.byStatus['Chiuso']}</div></div>
+        <div class="stat"><div class="label">Tempo medio lavorazione</div><div class="value small">${fmtDuration(s.avgWorkMinutes)}</div></div>
         <div class="stat"><div class="label">Tempo medio risoluzione</div><div class="value small">${fmtDuration(s.avgResolutionMinutes)}</div></div>
-        <div class="stat"><div class="label">Chiusi (7 giorni)</div><div class="value">${s.closedLast7Days}</div></div>
       </div>`;
+
+    // Tabella tempo di lavorazione per cliente
+    if (s.workByClient && s.workByClient.length) {
+      statsHtml += `
+        <div class="work-table-wrap">
+          <h3 class="work-table-title">Tempo di lavorazione per cliente</h3>
+          <table class="work-table">
+            <thead><tr><th>Cliente</th><th>Ticket chiusi</th><th>Tempo totale lavorazione</th></tr></thead>
+            <tbody>
+              ${s.workByClient.map(c => `
+                <tr>
+                  <td><b>${esc(c.client_name)}</b><br><span class="muted-sm">${esc(c.client_email)}</span></td>
+                  <td>${c.tickets_chiusi}</td>
+                  <td><b>${fmtDuration(c.total_work_minutes)}</b></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
   }
 
   const q = state.filter ? `?status=${encodeURIComponent(state.filter)}` : '';
@@ -270,6 +289,7 @@ async function renderDetail() {
       ${t.first_response_at ? `<span>Prima risposta: <b>${fmtDate(t.first_response_at)}</b></span>` : ''}
       ${t.closed_at ? `<span>Chiuso: <b>${fmtDate(t.closed_at)}</b></span>` : ''}
       ${t.resolution_minutes != null ? `<span>Tempo di risoluzione: <b>${fmtDuration(t.resolution_minutes)}</b></span>` : ''}
+      ${t.work_minutes != null ? `<span>Tempo di lavorazione: <b>${fmtDuration(t.work_minutes)}</b></span>` : ''}
     </div>`;
 
   const msgs = (t.messages || []).map(m => `
