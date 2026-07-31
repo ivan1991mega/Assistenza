@@ -218,27 +218,30 @@ app.patch('/api/tickets/:id/status', auth(true, true), (req, res) => {
   let firstResponse = ticket.first_response_at;
   let closedAt = ticket.closed_at;
   let resolutionMinutes = ticket.resolution_minutes;
+  let workMinutes = ticket.work_minutes;
 
   // Prima presa in carico: registra il primo tempo di risposta
   if (status === 'In lavorazione' && !firstResponse) {
     firstResponse = now;
   }
-  // Chiusura: calcola il tempo totale di risoluzione
+  // Chiusura: calcola il tempo totale (dalla creazione) e il tempo di lavorazione (dalla presa in carico)
   if (status === 'Chiuso') {
     if (!firstResponse) firstResponse = now;
     closedAt = now;
     resolutionMinutes = minutesBetween(ticket.created_at, now);
+    workMinutes = minutesBetween(firstResponse, now);
   }
-  // Riapertura: azzera la chiusura
+  // Riapertura: azzera la chiusura e i tempi calcolati
   if (status !== 'Chiuso' && ticket.status === 'Chiuso') {
     closedAt = null;
     resolutionMinutes = null;
+    workMinutes = null;
   }
 
   db.prepare(`
-    UPDATE tickets SET status = ?, first_response_at = ?, closed_at = ?, resolution_minutes = ?
+    UPDATE tickets SET status = ?, first_response_at = ?, closed_at = ?, resolution_minutes = ?, work_minutes = ?
     WHERE id = ?
-  `).run(status, firstResponse, closedAt, resolutionMinutes, req.params.id);
+  `).run(status, firstResponse, closedAt, resolutionMinutes, workMinutes, req.params.id);
 
   // Notifica email al cliente alla chiusura (solo quando passa a Chiuso)
   if (status === 'Chiuso' && ticket.status !== 'Chiuso') {
@@ -344,6 +347,23 @@ app.get('/api/stats', auth(true, true), (req, res) => {
     WHERE status = 'Chiuso' AND closed_at >= datetime('now', '-7 days')
   `).get();
 
+  // Tempo di lavorazione sommato per ogni cliente (solo ticket chiusi con tempo registrato)
+  const workByClient = db.prepare(`
+    SELECT u.name AS client_name, u.email AS client_email,
+           COUNT(t.id) AS tickets_chiusi,
+           SUM(t.work_minutes) AS total_work_minutes
+    FROM tickets t JOIN users u ON u.id = t.user_id
+    WHERE t.status = 'Chiuso' AND t.work_minutes IS NOT NULL
+    GROUP BY t.user_id
+    ORDER BY total_work_minutes DESC
+  `).all();
+
+  // Media del tempo di lavorazione (in lavorazione -> chiusura)
+  const avgWork = db.prepare(`
+    SELECT AVG(work_minutes) AS avg_min
+    FROM tickets WHERE status = 'Chiuso' AND work_minutes IS NOT NULL
+  `).get();
+
   res.json({
     total: totals.total,
     byStatus,
@@ -352,7 +372,9 @@ app.get('/api/stats', auth(true, true), (req, res) => {
     avgResolutionMinutes: avgRes.avg_min != null ? Math.round(avgRes.avg_min) : null,
     minResolutionMinutes: avgRes.min_min,
     maxResolutionMinutes: avgRes.max_min,
-    closedLast7Days: recentClosed.n
+    avgWorkMinutes: avgWork.avg_min != null ? Math.round(avgWork.avg_min) : null,
+    closedLast7Days: recentClosed.n,
+    workByClient
   });
 });
 
