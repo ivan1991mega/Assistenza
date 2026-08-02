@@ -40,6 +40,8 @@ label { font-size: 13px; font-weight: 500; color: var(--muted); display: block; 
 .btn.sm { padding: 6px 12px; font-size: 13px; }
 .btn.green { background: var(--green); }
 .btn.amber { background: var(--amber); }
+.btn.danger { background: var(--red); }
+.btn.danger:hover { background: #b91c1c; }
 .btn:disabled { opacity: .5; cursor: default; }
 
 /* Auth */
