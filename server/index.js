@@ -259,6 +259,14 @@ app.patch('/api/tickets/:id/status', auth(true, true), (req, res) => {
   res.json({ ok: true });
 });
 
+// Elimina un ticket (solo admin). Cancella anche messaggi e dati di lettura collegati (ON DELETE CASCADE).
+app.delete('/api/tickets/:id', auth(true, true), (req, res) => {
+  const ticket = db.prepare('SELECT id FROM tickets WHERE id = ?').get(req.params.id);
+  if (!ticket) return res.status(404).json({ error: 'Ticket non trovato' });
+  db.prepare('DELETE FROM tickets WHERE id = ?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 // Aggiungi messaggio/risposta al ticket
 app.post('/api/tickets/:id/messages', auth(), (req, res) => {
   const { body } = req.body || {};
