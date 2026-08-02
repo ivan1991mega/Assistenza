@@ -281,6 +281,7 @@ async function renderDetail() {
       <span class="lbl">Cambia stato:</span>
       ${t.status !== 'In lavorazione' ? `<button class="btn amber sm" data-status="In lavorazione">Prendi in carico</button>` : ''}
       ${t.status !== 'Chiuso' ? `<button class="btn green sm" data-status="Chiuso">Chiudi ticket</button>` : `<button class="btn secondary sm" data-status="Aperto">Riapri</button>`}
+      <button class="btn danger sm" id="deleteBtn" style="margin-left:auto">Elimina ticket</button>
     </div>` : '';
 
   const timings = `
@@ -339,6 +340,18 @@ async function renderDetail() {
     if (!body) return;
     await api(`/api/tickets/${t.id}/messages`, { method: 'POST', body: { body } });
     render();
+  };
+  const delBtn = document.getElementById('deleteBtn');
+  if (delBtn) delBtn.onclick = async () => {
+    const ok = confirm(`Eliminare definitivamente il ticket #${t.id} "${t.title}"?\n\nVerranno cancellati anche tutti i messaggi. L'operazione non è reversibile.`);
+    if (!ok) return;
+    try {
+      await api(`/api/tickets/${t.id}`, { method: 'DELETE' });
+      state.view = 'list';
+      render();
+    } catch (err) {
+      alert('Errore durante l\'eliminazione: ' + err.message);
+    }
   };
 }
 
