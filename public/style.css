@@ -164,3 +164,56 @@ label { font-size: 13px; font-weight: 500; color: var(--muted); display: block; 
 
 .error { background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; }
 .spinner { text-align: center; padding: 40px; color: var(--muted); }
+
+.head-actions { display: flex; gap: 10px; align-items: center; }
+
+/* ---------- MOBILE / RESPONSIVE ---------- */
+@media (max-width: 640px) {
+  .container { padding: 18px 14px; }
+
+  /* Barra in alto: resta su una riga ma piÃ¹ compatta */
+  .topbar { padding: 0 14px; height: 54px; }
+  .topbar .brand { font-size: 15px; }
+  .topbar .user { gap: 8px; font-size: 13px; }
+  .topbar .user span { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Testata pagina: titolo sopra, pulsanti sotto a tutta larghezza */
+  .page-head { flex-direction: column; align-items: stretch; gap: 12px; }
+  .page-head h2 { font-size: 18px; }
+  .head-actions { width: 100%; }
+  .head-actions .btn { flex: 1; text-align: center; }
+
+  /* Statistiche: due colonne invece di tante strette */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat { padding: 12px 14px; }
+  .stat .value { font-size: 22px; }
+
+  /* Card ticket: badge sotto invece che a destra, per non stringere il titolo */
+  .ticket-top { flex-direction: column; }
+  .ticket-top > div:last-child { flex-direction: row !important; align-items: center; }
+  .ticket-meta { gap: 8px 12px; }
+
+  /* Azioni admin: pulsanti a tutta larghezza, impilati */
+  .admin-actions { gap: 8px; }
+  .admin-actions .btn { flex: 1 1 auto; }
+  .admin-actions .btn.danger { margin-left: 0 !important; flex-basis: 100%; }
+
+  /* Dettaglio */
+  .detail-card { padding: 18px 16px; }
+  .detail-info { gap: 6px 14px; }
+
+  /* Messaggi a piena larghezza per leggibilitÃ  */
+  .msg { max-width: 100%; }
+
+  /* Casella risposta: campo sopra, bottone sotto a tutta larghezza */
+  .reply-box { flex-direction: column; }
+  .reply-box .btn { width: 100%; }
+
+  /* Tabella tempi: font piÃ¹ piccolo e scroll orizzontale se serve */
+  .work-table-wrap { padding: 14px; overflow-x: auto; }
+  .work-table { font-size: 13px; }
+  .work-table th, .work-table td { padding: 8px 6px; }
+
+  /* Form nuovo ticket: categoria e prioritÃ  in colonna */
+  .detail-card form > div[style*="display:flex"] { flex-direction: column; gap: 0 !important; }
+}
