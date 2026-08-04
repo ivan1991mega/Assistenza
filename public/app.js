@@ -195,7 +195,10 @@ async function renderList() {
     <div class="container">
       <div class="page-head">
         <h2>${isAdmin ? 'Tutti i ticket' : 'I miei ticket'}</h2>
-        <button class="btn" id="newBtn">+ Nuovo ticket</button>
+        <div class="head-actions">
+          <button class="btn secondary" id="refreshBtn" title="Aggiorna la lista">↻ Aggiorna</button>
+          <button class="btn" id="newBtn">+ Nuovo ticket</button>
+        </div>
       </div>
       ${statsHtml}
       ${filtersHtml}
@@ -203,10 +206,29 @@ async function renderList() {
     </div>`;
 
   wireTopbar();
+  const rb = document.getElementById('refreshBtn');
+  if (rb) rb.onclick = () => renderList();
   const nb = document.getElementById('newBtn');
   if (nb) nb.onclick = () => { state.view = 'new'; render(); };
   document.querySelectorAll('.chip').forEach(c => c.onclick = () => { state.filter = c.dataset.f || null; render(); });
   document.querySelectorAll('.ticket').forEach(t => t.onclick = () => { state.ticketId = t.dataset.id; state.view = 'detail'; render(); });
+
+  // Auto-aggiornamento: ricarica la lista ogni 15 secondi mentre sei in questa schermata
+  scheduleAutoRefresh();
+}
+
+// Timer di auto-refresh: attivo solo nella vista lista, si ferma altrove
+let autoRefreshTimer = null;
+function scheduleAutoRefresh() {
+  clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    // Aggiorna solo se siamo ancora nella lista e la scheda è visibile
+    if (state.view === 'list' && state.user && !document.hidden) {
+      renderList();
+    } else {
+      clearInterval(autoRefreshTimer);
+    }
+  }, 15000);
 }
 
 // ---------- NEW TICKET ----------
@@ -353,6 +375,22 @@ async function renderDetail() {
       alert('Errore durante l\'eliminazione: ' + err.message);
     }
   };
+
+  // Auto-aggiornamento del dettaglio: ricarica ogni 15s per vedere nuovi messaggi,
+  // ma NON se stai scrivendo una risposta (per non perdere il testo digitato).
+  scheduleDetailRefresh(t.id);
+}
+
+let detailRefreshTimer = null;
+function scheduleDetailRefresh(ticketId) {
+  clearInterval(detailRefreshTimer);
+  detailRefreshTimer = setInterval(() => {
+    const stillHere = state.view === 'detail' && String(state.ticketId) === String(ticketId);
+    if (!stillHere || document.hidden) { clearInterval(detailRefreshTimer); return; }
+    const replyEl = document.getElementById('replyText');
+    const isTyping = replyEl && replyEl.value.trim().length > 0;
+    if (!isTyping) renderDetail();
+  }, 15000);
 }
 
 // ---------- ROUTER ----------
