@@ -106,9 +106,13 @@ app.get('/api/tickets', auth(), (req, res) => {
       ? db.prepare(base + ' WHERE t.status = ? ORDER BY t.created_at DESC').all(status)
       : db.prepare(base + ' ORDER BY t.created_at DESC').all();
   } else {
-    rows = db.prepare(
-      'SELECT * FROM tickets WHERE user_id = ? ORDER BY created_at DESC'
-    ).all(req.user.id);
+    rows = status
+      ? db.prepare(
+          'SELECT * FROM tickets WHERE user_id = ? AND status = ? ORDER BY created_at DESC'
+        ).all(req.user.id, status)
+      : db.prepare(
+          'SELECT * FROM tickets WHERE user_id = ? ORDER BY created_at DESC'
+        ).all(req.user.id);
   }
 
   // Per ogni ticket calcola se ci sono messaggi non letti per l'utente corrente.
