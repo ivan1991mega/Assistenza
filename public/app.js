@@ -1,5 +1,5 @@
 const app = document.getElementById('app');
-let state = { user: null, view: 'list', ticketId: null, filter: null };
+let state = { user: null, view: 'list', ticketId: null, filter: null, clientFilter: null };
 
 // ---------- API helper ----------
 async function api(url, opts = {}) {
@@ -161,14 +161,33 @@ async function renderList() {
     }
   }
 
-  const q = state.filter ? `?status=${encodeURIComponent(state.filter)}` : '';
+  // Costruisce l'URL con i filtri attivi (stato e/o cliente)
+  const params = [];
+  if (state.filter) params.push(`status=${encodeURIComponent(state.filter)}`);
+  if (isAdmin && state.clientFilter) params.push(`clientId=${encodeURIComponent(state.clientFilter)}`);
+  const q = params.length ? '?' + params.join('&') : '';
   const tickets = await api('/api/tickets' + q);
+
+  // Per il menu a tendina clienti (solo admin): carica l'elenco
+  let clientFilterHtml = '';
+  if (isAdmin) {
+    let clients = [];
+    try { clients = await api('/api/clients'); } catch { clients = []; }
+    if (clients.length) {
+      clientFilterHtml = `
+        <select id="clientFilter" class="client-filter">
+          <option value="">Tutti i clienti</option>
+          ${clients.map(c => `<option value="${c.id}" ${String(state.clientFilter) === String(c.id) ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}
+        </select>`;
+    }
+  }
 
   const filters = ['Aperto', 'In lavorazione', 'Chiuso'];
   const filtersHtml = `
     <div class="filters">
       <span class="chip ${!state.filter ? 'active' : ''}" data-f="">Tutti</span>
       ${filters.map(f => `<span class="chip ${state.filter === f ? 'active' : ''}" data-f="${f}">${f}</span>`).join('')}
+      ${clientFilterHtml}
     </div>`;
 
   const listHtml = tickets.length ? tickets.map(t => `
@@ -189,7 +208,7 @@ async function renderList() {
           <span class="badge prio-${t.priority}">${t.priority}</span>
         </div>
       </div>
-    </div>`).join('') : `<div class="empty">Nessun ticket ${state.filter ? 'con questo stato' : 'ancora'}.</div>`;
+    </div>`).join('') : `<div class="empty">Nessun ticket ${(state.filter || state.clientFilter) ? 'con questi filtri' : 'ancora'}.</div>`;
 
   app.innerHTML = topbar() + `
     <div class="container">
@@ -211,6 +230,8 @@ async function renderList() {
   const nb = document.getElementById('newBtn');
   if (nb) nb.onclick = () => { state.view = 'new'; render(); };
   document.querySelectorAll('.chip').forEach(c => c.onclick = () => { state.filter = c.dataset.f || null; render(); });
+  const cf = document.getElementById('clientFilter');
+  if (cf) cf.onchange = () => { state.clientFilter = cf.value || null; render(); };
   document.querySelectorAll('.ticket').forEach(t => t.onclick = () => { state.ticketId = t.dataset.id; state.view = 'detail'; render(); });
 
   // Auto-aggiornamento: ricarica la lista ogni 15 secondi mentre sei in questa schermata
