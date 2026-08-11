@@ -1,15 +1,17 @@
 :root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --border: #e3e6ea;
-  --text: #1a1d21;
-  --muted: #6b7280;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --green: #059669;
-  --amber: #d97706;
-  --red: #dc2626;
+  /* Tema scuro (dark mode fissa) */
+  --bg: #14171c;          /* sfondo pagina, grigio-blu molto scuro */
+  --surface: #1e232b;     /* card, barre, riquadri */
+  --border: #333b46;      /* bordi */
+  --text: #e6e9ee;        /* testo principale, chiaro morbido (non bianco puro) */
+  --muted: #9aa4b2;       /* testo secondario */
+  --accent: #4b8bf5;      /* blu piÃ¹ luminoso per risaltare sul buio */
+  --accent-hover: #6b9ff7;
+  --green: #22c55e;
+  --amber: #f0a836;
+  --red: #ef4444;
   --radius: 10px;
+  color-scheme: dark;  /* fa sÃ¬ che scrollbar, tendine dei select e cursori seguano il tema scuro */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -90,7 +92,7 @@ label { font-size: 13px; font-weight: 500; color: var(--muted); display: block; 
   padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
   background: var(--surface); font-size: 13px; color: var(--muted); cursor: pointer;
 }
-.chip.active { background: var(--text); color: #fff; border-color: var(--text); }
+.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* Ticket list */
 .ticket-list { display: flex; flex-direction: column; gap: 10px; }
@@ -106,13 +108,15 @@ label { font-size: 13px; font-weight: 500; color: var(--muted); display: block; 
 .ticket-id { color: var(--muted); font-size: 12px; font-weight: 500; }
 
 .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
-.badge.aperto { background: #dbeafe; color: #1e40af; }
-.badge.lavorazione { background: #fef3c7; color: #92400e; }
-.badge.chiuso { background: #d1fae5; color: #065f46; }
-.badge.prio-Urgente { background: #fee2e2; color: #991b1b; }
-.badge.prio-Alta { background: #ffedd5; color: #9a3412; }
-.badge.prio-Media { background: #f3f4f6; color: #374151; }
-.badge.prio-Bassa { background: #f3f4f6; color: #6b7280; }
+/* Stati: colori distinti e leggibili su fondo scuro */
+.badge.aperto { background: #1e3a5f; color: #7ab8ff; }         /* blu */
+.badge.lavorazione { background: #4a3510; color: #f5c168; }    /* ambra */
+.badge.chiuso { background: #14432a; color: #5fe089; }         /* verde */
+/* PrioritÃ  */
+.badge.prio-Urgente { background: #4c1d1d; color: #ff8a8a; }   /* rosso */
+.badge.prio-Alta { background: #4a2f14; color: #f0a860; }      /* arancio */
+.badge.prio-Media { background: #2a3038; color: #b4bcc7; }     /* grigio */
+.badge.prio-Bassa { background: #24292f; color: #8a94a1; }     /* grigio tenue */
 
 .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
 
@@ -160,14 +164,14 @@ label { font-size: 13px; font-weight: 500; color: var(--muted); display: block; 
 .messages h3 { font-size: 15px; margin-bottom: 14px; }
 .msg { padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; max-width: 85%; font-size: 14px; }
 .msg.client { background: var(--bg); }
-.msg.admin { background: #eff6ff; margin-left: auto; }
+.msg.admin { background: #1c2f4a; margin-left: auto; }
 .msg .author { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
 .msg.admin .author { color: var(--accent); }
 .msg .time { font-size: 11px; color: var(--muted); margin-top: 4px; }
 .reply-box { display: flex; gap: 10px; margin-top: 14px; }
 .reply-box textarea { min-height: 44px; resize: vertical; }
 
-.error { background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; }
+.error { background: #3a1a1a; color: #ff9a9a; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; }
 .spinner { text-align: center; padding: 40px; color: var(--muted); }
 
 .head-actions { display: flex; gap: 10px; align-items: center; }
