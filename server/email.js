@@ -5,10 +5,17 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev'; // mittente
 const APP_URL = process.env.APP_URL || ''; // es. https://iltuohelpdesk.up.railway.app
 
+// Le email ai CLIENTI richiedono un dominio verificato su Resend.
+// Finché non ce l'hai, restano disattivate: parte solo la notifica all'admin (verso il tuo indirizzo).
+// Per riattivarle in futuro, imposta CLIENT_EMAILS_ENABLED=true tra le variabili.
+const CLIENT_EMAILS_ENABLED = process.env.CLIENT_EMAILS_ENABLED === 'true';
+
 const emailEnabled = !!RESEND_API_KEY;
 
 if (!emailEnabled) {
   console.log('>>> Email disattivate: RESEND_API_KEY non impostata. Le notifiche in-app funzionano comunque.');
+} else if (!CLIENT_EMAILS_ENABLED) {
+  console.log('>>> Email ai clienti disattivate (serve un dominio verificato). Attiva solo la notifica all\'admin.');
 }
 
 function esc(s) {
@@ -42,6 +49,7 @@ async function sendEmail({ to, subject, html }) {
 
 // Email al cliente quando l'admin risponde a un ticket.
 function notifyClientNewReply({ clientEmail, clientName, ticketId, ticketTitle, replyBody }) {
+  if (!CLIENT_EMAILS_ENABLED) return { skipped: true };
   const link = APP_URL ? `${APP_URL}` : '';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; color: #1a1d21;">
@@ -57,6 +65,7 @@ function notifyClientNewReply({ clientEmail, clientName, ticketId, ticketTitle, 
 
 // Email al cliente quando l'admin chiude il ticket.
 function notifyClientClosed({ clientEmail, clientName, ticketId, ticketTitle }) {
+  if (!CLIENT_EMAILS_ENABLED) return { skipped: true };
   const link = APP_URL ? `${APP_URL}` : '';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; color: #1a1d21;">
