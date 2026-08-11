@@ -182,12 +182,14 @@ app.post('/api/tickets', auth(), (req, res) => {
     category || 'Generale', priority || 'Media'
   );
 
-  // Se il ticket lo apre un CLIENTE, avvisa l'admin via email
+  // Se il ticket lo apre un CLIENTE, avvisa l'admin via email.
+  // La notifica va a NOTIFY_EMAIL se impostata, altrimenti all'email dell'account admin.
   if (req.user.role === 'client') {
     const admin = db.prepare("SELECT email FROM users WHERE role = 'admin' ORDER BY id LIMIT 1").get();
-    if (admin) {
+    const destinatario = process.env.NOTIFY_EMAIL || (admin && admin.email);
+    if (destinatario) {
       email.notifyAdminNewTicket({
-        adminEmail: admin.email,
+        adminEmail: destinatario,
         clientName: req.user.name,
         ticketId: info.lastInsertRowid,
         ticketTitle: title.trim(),
