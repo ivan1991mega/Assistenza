@@ -93,18 +93,22 @@ app.get('/api/me', auth(false), (req, res) => {
 });
 
 // ---------- TICKETS ----------
-// Lista ticket: admin vede tutti, cliente vede i suoi
+// Lista ticket: admin vede tutti (filtrabili per stato e/o cliente), cliente vede i suoi
 app.get('/api/tickets', auth(), (req, res) => {
-  const { status } = req.query;
+  const { status, clientId } = req.query;
   let rows;
   if (req.user.role === 'admin') {
     const base = `
       SELECT t.*, u.name AS client_name, u.email AS client_email
       FROM tickets t JOIN users u ON u.id = t.user_id
     `;
-    rows = status
-      ? db.prepare(base + ' WHERE t.status = ? ORDER BY t.created_at DESC').all(status)
-      : db.prepare(base + ' ORDER BY t.created_at DESC').all();
+    // Costruisce le condizioni in modo che stato e cliente si possano combinare
+    const conditions = [];
+    const params = [];
+    if (status) { conditions.push('t.status = ?'); params.push(status); }
+    if (clientId) { conditions.push('t.user_id = ?'); params.push(clientId); }
+    const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
+    rows = db.prepare(base + where + ' ORDER BY t.created_at DESC').all(...params);
   } else {
     rows = status
       ? db.prepare(
