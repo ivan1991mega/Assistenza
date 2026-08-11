@@ -80,7 +80,12 @@ label { font-size: 13px; font-weight: 500; color: var(--muted); display: block; 
 .stat .value.small { font-size: 18px; }
 
 /* Filtri */
-.filters { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.filters { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+.client-filter {
+  width: auto; padding: 7px 12px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surface);
+  font-size: 13px; color: var(--text); margin-left: 4px;
+}
 .chip {
   padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
   background: var(--surface); font-size: 13px; color: var(--muted); cursor: pointer;
